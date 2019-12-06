@@ -63,10 +63,7 @@ class PV(epics.PV):
             print('.', end='')
             time.sleep(delay)
 
-        average = np.average(readings)
-        print('average {:.4f} {}'.format(average, self.units or ''))
-
-        return readings, average
+        return readings, np.average(readings)
 
 
 epics.pv.PV = PV
@@ -136,7 +133,11 @@ class UpstreamPot(PotBase):
 def query(message, allow_no=False):
     while True:
         print('{} [yn]'.format(message))
-        res = input()
+        try:
+            res = input()
+        except KeyboardInterrupt:
+            continue
+
         if res in ('yes', 'y'):
             return True
         elif res in ('no', 'n') and allow_no:
@@ -193,10 +194,20 @@ def get_calibration_data(pots):
         time.sleep(0.5)
         data['gaps'][gap] = read_potentiometer(pots)
 
+        if gap == GAP0:
+            print()
+            print('>Recording point< Potentiometer voltage at {}mm gap: {:.4f}'
+                  ''.format(gap, data['gaps'][gap])
+                  )
+
     for block in BLOCK_THICKNESSES:
-        query('\n{}: insert the ceramic block of thickness: {:.1f} mm'
-              ''.format(pots.short_name, block))
+        query('\n{}: insert the ceramic block of thickness: {:.1f} mm.  '
+              'Ready?'.format(pots.short_name, block))
         data['blocks'][block] = read_potentiometer(pots)
+        print()
+        print('>Recording point< {:.1f} mm block potentiometer voltage {:.4f}'
+              ''.format(block, data['blocks'][block])
+              )
 
     move_gap(pots, 10)
 
@@ -206,6 +217,9 @@ def get_calibration_data(pots):
     data['slope'] = slope
     data['offset'] = data['center_line_shift']
 
+    print()
+    print('>Recording point< slope: ', data['slope'])
+    print('>Recording point< offset:', data['offset'])
     plot(pots, data)
     return data
 

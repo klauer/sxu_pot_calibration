@@ -325,6 +325,11 @@ def calibrate(cell):
     data = {}
 
     for part in [ds, us]:
+        name = part.short_name
+        if not query('Perform calibration of {}?'.format(name), allow_no=True):
+            print('Skipping {}...'.format(name))
+            continue
+        
         print('-- {} --'.format(part.short_name), file=sys.stderr)
         for pv in part.all_pvs:
             print_connected(pv)

@@ -233,11 +233,14 @@ def get_calibration_data(pots):
 
     move_gap(pots, 10)
 
-    _, data['center_line_shift'] = pots.center_line_shift_pv.get_averaged()
+    current_offset = pots.offset_pv.get()
+
+    _, center_line_shift = pots.center_line_shift_pv.get_averaged()
+    data['center_line_shift'] = center_line_shift
 
     slope, _ = calculate_slope_offset(data)
     data['slope'] = slope
-    data['offset'] = data['center_line_shift']
+    data['offset'] = -(center_line_shift - current_offset)
 
     print()
     print('>Recording point< slope: ', data['slope'])

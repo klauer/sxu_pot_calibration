@@ -198,22 +198,38 @@ def get_calibration_data(pots):
     for gap in (GAP0, GAP1):
         move_gap(pots, gap)
         time.sleep(0.5)
-        data['gaps'][gap] = read_potentiometer(pots)
+        voltage = read_potentiometer(pots)
+        data['gaps'][gap] = voltage
 
         if gap == GAP0:
             print()
             print('>Recording point< Potentiometer voltage at {}mm gap: {:.4f}'
                   ''.format(gap, data['gaps'][gap])
                   )
+            query('OK to caput reference voltage?')
+            pots.voltage_ref_pv.put(voltage)
 
-    for block in BLOCK_THICKNESSES:
-        query('\n{}: insert the ceramic block of thickness: {:.1f} mm.  '
-              'Ready?'.format(pots.short_name, block))
+    i = 0
+    while i < len(BLOCK_THICKNESSES):
+        block = BLOCK_THICKNESSES[i]
+        ret = query(
+            '\n{}: insert the ceramic block of thickness: {:.1f} mm.  '
+            'Ready? (n to go to the previous)'.format(pots.short_name, block),
+            allow_no=True
+        )
+
+        if not ret:
+            if i > 0:
+                i -= 1
+            continue
+
         data['blocks'][block] = read_potentiometer(pots)
         print()
         print('>Recording point< {:.1f} mm block potentiometer voltage {:.4f}'
               ''.format(block, data['blocks'][block])
               )
+
+        i += 1
 
     move_gap(pots, 10)
 

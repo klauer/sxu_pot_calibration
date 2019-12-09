@@ -25,9 +25,14 @@ except Exception:
 _print = print
 
 
-def print(*args, file=sys.stdout, **kwargs):
-    _print(*args, **kwargs)
+def print(*args, **kwargs):
+    file = kwargs.pop('file', sys.stdout)
+    _print(*args, file=file, **kwargs)
     file.flush()
+
+
+class TimeoutError(Exception):
+    pass
 
 
 PHYSICS_DATA = os.environ.get('PHYSICS_DATA')
@@ -83,7 +88,7 @@ class PotBase(object):
         self.gap_go_pv = PV(self.gap_prefix + 'Go')
 
         self.voltage_pv = PV(self.prefix + 'VAct')
-        self.voltage_ref_pv = PV(self.prefix + 'PotVref')
+        self.voltage_ref_pv = PV(self.prefix + 'PotVRef')
         self.gap_ref_pv = PV(self.prefix + 'GapRef')
         self.slope_pv = PV(self.prefix + 'PotSlope')
         self.offset_pv = PV(self.prefix + 'PotOffset')
@@ -134,10 +139,11 @@ def query(message, allow_no=False):
     while True:
         print('{} [yn]'.format(message))
         try:
-            res = input()
+            res = raw_input()
         except KeyboardInterrupt:
             continue
 
+        res = res.strip()
         if res in ('yes', 'y'):
             return True
         elif res in ('no', 'n') and allow_no:

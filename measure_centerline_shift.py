@@ -302,9 +302,9 @@ if __name__ == '__main__':
                         help='Upstream Y offset value', default=0.0)
     parser.add_argument('ds_offset', type=float,
                         help='Downstream Y offset value', default=0.0)
-    parser.add_argument('max_us_y', type=float,
-                        help='Maximum upstream Y value', default=1.0)
-    parser.add_argument('max_ds_y', type=float,
-                        help='Maximum downstream Y value', default=1.0)
+    parser.add_argument('max_us_y', type=float, nargs='?',
+                        help='Maximum upstream Y value [optional]', default=1.0)
+    parser.add_argument('max_ds_y', type=float, nargs='?',
+                        help='Maximum downstream Y value [optional]', default=1.0)
     args = parser.parse_args()
     calibrate(**dict(args._get_kwargs()))
